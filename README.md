@@ -16,7 +16,8 @@ This project evaluates different data structures using a healthcare dataset.
 
 3 Team Members
 - Ali Amad
-- (Add teammates here)
+- Jayden
+- Mohammed Damba
 
 4 Notes
 Part 1 completed (Design Phase)
