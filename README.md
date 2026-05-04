@@ -18,6 +18,7 @@ This project evaluates different data structures using a healthcare dataset.
 - Ali Amad
 - Jayden
 - Mohammed Damba
+- Anthony Gaskinsiii
 
 4 Notes
 Part 1 completed (Design Phase)
