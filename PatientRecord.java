@@ -1,17 +1,18 @@
 public class PatientRecord {
 
     int id;
-    String name;        //
+    String name;
     int age;
     String gender;
     String condition;
     String hospital;
     String admissionType;
+    String insurance;
     double billing;
 
     public PatientRecord(int id, String name, int age, String gender,
                          String condition, String hospital,
-                         String admissionType, double billing) {
+                         String admissionType, String insurance, double billing) {
 
         this.id = id;
         this.name = name;
@@ -20,6 +21,7 @@ public class PatientRecord {
         this.condition = condition;
         this.hospital = hospital;
         this.admissionType = admissionType;
+        this.insurance = insurance;
         this.billing = billing;
     }
 
@@ -28,6 +30,7 @@ public class PatientRecord {
         return "ID: " + id +
                 ", Name: " + name +
                 ", Age: " + age +
-                ", Condition: " + condition;
+                ", Condition: " + condition +
+                ", Insurance: " + insurance;
     }
 }
