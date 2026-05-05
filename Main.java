@@ -1,78 +1,30 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class Main {
 
-    //  ARRAYLIST Part
-    public static void insertRecord(ArrayList<PatientRecord> list, PatientRecord record) {
-        list.add(record);
-    }
-
-    public static PatientRecord searchRecord(ArrayList<PatientRecord> list, int id) {
-        for (PatientRecord p : list) {
-            if (p.id == id) return p;
-        }
-        return null;
-    }
-
-    public static boolean deleteRecord(ArrayList<PatientRecord> list, int id) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).id == id) {
-                list.remove(i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    // HASHMAP Part
-    public static void insertRecord(HashMap<Integer, PatientRecord> map, PatientRecord record) {
-        map.put(record.id, record);
-    }
-
-    public static PatientRecord searchRecord(HashMap<Integer, PatientRecord> map, int id) {
-        return map.get(id);
-    }
-
-
-    //  LINKEDLIST  Part
-    public static PatientRecord searchRecord(LinkedList<PatientRecord> list, int id) {
-        for (PatientRecord p : list) {
-            if (p.id == id) return p;
-        }
-        return null;
-    }
-
-
-    //  QUEUE  Part
-    public static PatientRecord searchRecord(Queue<PatientRecord> queue, int id) {
-        for (PatientRecord p : queue) {
-            if (p.id == id) return p;
-        }
-        return null;
-    }
-
-
-    // CSV file loader kaggle
+    // ================= LOAD CSV =================
     public static ArrayList<PatientRecord> loadFromCSV(String fileName) {
-
         ArrayList<PatientRecord> list = new ArrayList<>();
-        String line;
-        int id = 1;
 
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(fileName));
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+
+            String line;
             br.readLine(); // skip header
+            int id = 1;
 
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
+
+                String[] values = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
                 try {
-                    String name = values[0];     //
+                    String name = values[0].replace("\"", "");
                     int age = Integer.parseInt(values[1]);
                     String gender = values[2];
+
                     String condition = values[4];
+                    String admissionType = values[5];
+                    String insurance = values[6];
                     String hospital = values[7];
 
                     double billing;
@@ -82,86 +34,120 @@ public class Main {
                         billing = 0.0;
                     }
 
-                    PatientRecord record = new PatientRecord(
-                            id++, name, age, gender,
-                            condition, hospital,
-                            "Normal", billing
-                    );
-
-                    list.add(record);
+                    list.add(new PatientRecord(id++, name, age, gender,
+                            condition, hospital, admissionType, insurance, billing));
 
                 } catch (Exception e) {
-                    // skip bad row
+                    // skip bad rows
                 }
             }
 
-            br.close();
-
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("File not found!");
         }
 
         return list;
     }
 
+    // ================= SEARCH =================
+    public static PatientRecord searchArrayList(ArrayList<PatientRecord> list, int id) {
+        for (PatientRecord p : list) {
+            if (p.id == id) return p;
+        }
+        return null;
+    }
 
-    //  BENCHMARK Part
-    public static void benchmark(ArrayList<PatientRecord> list) {
+    public static PatientRecord searchLinkedList(LinkedList<PatientRecord> list, int id) {
+        for (PatientRecord p : list) {
+            if (p.id == id) return p;
+        }
+        return null;
+    }
+
+    public static PatientRecord searchHashMap(HashMap<Integer, PatientRecord> map, int id) {
+        return map.get(id);
+    }
+
+    public static PatientRecord searchQueue(Queue<PatientRecord> queue, int id) {
+        for (PatientRecord p : queue) {
+            if (p.id == id) return p;
+        }
+        return null;
+    }
+
+    // ================= PERFORMANCE =================
+    public static long testArrayList(ArrayList<PatientRecord> list, int id) {
+        long start = System.nanoTime();
+        searchArrayList(list, id);
+        return System.nanoTime() - start;
+    }
+
+    public static long testLinkedList(LinkedList<PatientRecord> list, int id) {
+        long start = System.nanoTime();
+        searchLinkedList(list, id);
+        return System.nanoTime() - start;
+    }
+
+    public static long testHashMap(HashMap<Integer, PatientRecord> map, int id) {
+        long start = System.nanoTime();
+        searchHashMap(map, id);
+        return System.nanoTime() - start;
+    }
+
+    public static long testQueue(Queue<PatientRecord> queue, int id) {
+        long start = System.nanoTime();
+        searchQueue(queue, id);
+        return System.nanoTime() - start;
+    }
+
+    // ================= TABLE =================
+    public static void printTable(ArrayList<PatientRecord> data, int run) {
 
         int[] sizes = {100, 1000, 5000, 10000};
 
+        System.out.println("\n=========== PERFORMANCE TABLE (RUN " + run + ") ===========");
+        System.out.printf("%-8s %-12s %-12s %-12s %-12s %-12s%n",
+                "Size", "ArrayList", "LinkedList", "HashMap", "Queue", "Complexity");
+        System.out.println("---------------------------------------------------------------");
+
         for (int size : sizes) {
 
-            ArrayList<PatientRecord> subList = new ArrayList<>(list.subList(0, size));
-
-            long start = System.nanoTime();
-            searchRecord(subList, size / 2);
-            long arrayTime = System.nanoTime() - start;
-
-            LinkedList<PatientRecord> linkedList = new LinkedList<>(subList);
-            start = System.nanoTime();
-            searchRecord(linkedList, size / 2);
-            long linkedTime = System.nanoTime() - start;
-
+            ArrayList<PatientRecord> sub = new ArrayList<>(data.subList(0, size));
+            LinkedList<PatientRecord> linked = new LinkedList<>(sub);
             HashMap<Integer, PatientRecord> map = new HashMap<>();
-            for (PatientRecord p : subList) map.put(p.id, p);
+            Queue<PatientRecord> queue = new LinkedList<>(sub);
 
-            start = System.nanoTime();
-            map.get(size / 2);
-            long hashTime = System.nanoTime() - start;
+            for (PatientRecord p : sub) {
+                map.put(p.id, p);
+            }
 
-            Queue<PatientRecord> queue = new LinkedList<>(subList);
-            start = System.nanoTime();
-            searchRecord(queue, size / 2);
-            long queueTime = System.nanoTime() - start;
+            long t1 = testArrayList(sub, size / 2);
+            long t2 = testLinkedList(linked, size / 2);
+            long t3 = testHashMap(map, size / 2);
+            long t4 = testQueue(queue, size / 2);
 
-            System.out.println("\nSize: " + size);
-            System.out.println("ArrayList: " + arrayTime);
-            System.out.println("LinkedList: " + linkedTime);
-            System.out.println("HashMap: " + hashTime);
-            System.out.println("Queue: " + queueTime);
+            System.out.printf("%-8d %-12d %-12d %-12d %-12d %-12s%n",
+                    size, t1, t2, t3, t4, "O(n) / O(1)");
         }
     }
 
-
-    //  MAIN PArt
+    // ================= MAIN =================
     public static void main(String[] args) {
 
         ArrayList<PatientRecord> list = loadFromCSV("healthcare_dataset.csv");
 
         System.out.println("Total Records Loaded: " + list.size());
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < Math.min(5, list.size()); i++) {
             System.out.println(list.get(i));
         }
 
-        // -------- BASIC TESTS --------
-        System.out.println("\nSearch ID 5: " + searchRecord(list, 5));
+        // ===== 4 RUNS =====
+        for (int i = 1; i <= 4; i++) {
+            printTable(list, i);
+        }
 
-        // -------- BENCHMARK --------
-        benchmark(list);
-
-        // -------- INTERACTIVE MENU --------
+        // ===== INTERACTIVE MENU =====
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -176,38 +162,51 @@ public class Main {
             if (choice == 1) {
                 System.out.print("Enter ID: ");
                 int id = scanner.nextInt();
-                System.out.println(searchRecord(list, id));
+
+                PatientRecord result = searchArrayList(list, id);
+                System.out.println(result != null ? result : "Not Found");
 
             } else if (choice == 2) {
 
                 scanner.nextLine();
 
-                System.out.print("Enter Name: ");
+                System.out.print("Name: ");
                 String name = scanner.nextLine();
 
-                System.out.print("Enter Age: ");
+                System.out.print("Age: ");
                 int age = scanner.nextInt();
+                scanner.nextLine();
 
-                PatientRecord p = new PatientRecord(
-                        list.size() + 1,
-                        name,
-                        age,
-                        "Unknown",
-                        "Unknown",
-                        "Unknown",
-                        "Normal",
-                        0.0
-                );
+                System.out.print("Gender: ");
+                String gender = scanner.nextLine();
 
-                insertRecord(list, p);
+                System.out.print("Condition: ");
+                String condition = scanner.nextLine();
+
+                System.out.print("Hospital: ");
+                String hospital = scanner.nextLine();
+
+                System.out.print("Admission Type: ");
+                String admission = scanner.nextLine();
+
+                System.out.print("Insurance: ");
+                String insurance = scanner.nextLine();
+
+                System.out.print("Billing: ");
+                double billing = scanner.nextDouble();
+
+                list.add(new PatientRecord(list.size() + 1, name, age, gender,
+                        condition, hospital, admission, insurance, billing));
+
                 System.out.println("Added!");
 
             } else if (choice == 3) {
-                System.out.print("Enter ID: ");
+
+                System.out.print("Enter ID to delete: ");
                 int id = scanner.nextInt();
 
-                boolean removed = deleteRecord(list, id);
-                System.out.println(removed ? "Deleted" : "Not found");
+                list.removeIf(p -> p.id == id);
+                System.out.println("Deleted (if existed)");
 
             } else {
                 break;
