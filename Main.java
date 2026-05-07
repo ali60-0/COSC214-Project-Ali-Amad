@@ -123,8 +123,12 @@ public class Main {
 
         for (int size : sizes) {
 
-            ArrayList<PatientRecord> subList =
-                    new ArrayList<>(mainList.subList(0, size));
+           if (mainList.size() < size) {
+    continue;
+}
+
+ArrayList<PatientRecord> subList =
+        new ArrayList<>(mainList.subList(0, size));
 
             // ================= ARRAYLIST =================
             ArrayList<PatientRecord> arrayList =
@@ -380,7 +384,7 @@ public class Main {
         System.out.println("Total Records Loaded: " + list.size());
 
         // preview first 5 records
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < Math.min(5, list.size()); i++) {
             System.out.println(list.get(i));
         }
 
@@ -391,114 +395,150 @@ public class Main {
         benchmark(list, 4);
 
         // ================= INTERACTIVE MENU =================
-        Scanner scanner = new Scanner(System.in);
+Scanner scanner = new Scanner(System.in);
 
-        while (true) {
+while (true) {
 
-            System.out.println("\n========= MENU =========");
-            System.out.println("1. Search Patient");
-            System.out.println("2. Insert Patient");
-            System.out.println("3. Delete Patient");
-            System.out.println("4. Exit");
+    int choice;
 
-            System.out.print("Choose option: ");
+    // ================= MENU FAIL SAFE =================
+    while (true) {
 
-            int choice = scanner.nextInt();
+        System.out.println("\n--- MENU ---");
+        System.out.println("1. Search Patient");
+        System.out.println("2. Insert Patient");
+        System.out.println("3. Delete Patient");
+        System.out.println("4. View Doctors");
+        System.out.println("5. Exit");
 
-            // ================= SEARCH =================
-            if (choice == 1) {
+        System.out.print("Enter choice: ");
 
-                System.out.print("Enter ID: ");
+        if (scanner.hasNextInt()) {
 
-                int id = scanner.nextInt();
+            choice = scanner.nextInt();
+            scanner.nextLine();
 
-                PatientRecord p =
-                        searchArrayList(list, id);
-
-                if (p != null) {
-                    System.out.println("\nFOUND:");
-                    System.out.println(p);
-                } else {
-                    System.out.println("Patient not found.");
-                }
-            }
-
-            // ================= INSERT =================
-            else if (choice == 2) {
-
-                scanner.nextLine();
-
-                System.out.print("Name: ");
-                String name = scanner.nextLine();
-
-                System.out.print("Age: ");
-                int age = scanner.nextInt();
-                scanner.nextLine();
-
-                System.out.print("Gender: ");
-                String gender = scanner.nextLine();
-
-                System.out.print("Condition: ");
-                String condition = scanner.nextLine();
-
-                System.out.print("Hospital: ");
-                String hospital = scanner.nextLine();
-
-                System.out.print("Admission Type: ");
-                String admission = scanner.nextLine();
-
-                System.out.print("Insurance: ");
-                String insurance = scanner.nextLine();
-
-                System.out.print("Billing: ");
-                double billing = scanner.nextDouble();
-
-                PatientRecord p =
-                        new PatientRecord(
-                                list.size() + 1,
-                                name,
-                                age,
-                                gender,
-                                condition,
-                                hospital,
-                                admission,
-                                insurance,
-                                billing
-                        );
-
-                insertRecord(list, p);
-
-                System.out.println("\nPatient Added Successfully!");
-                System.out.println("New Patient ID: " + p.id);
-            }
-
-            // ================= DELETE =================
-            else if (choice == 3) {
-
-                System.out.print("Enter ID to delete: ");
-
-                int id = scanner.nextInt();
-
-                boolean removed =
-                        deleteRecord(list, id);
-
-                if (removed) {
-                    System.out.println("Patient deleted.");
-                } else {
-                    System.out.println("Patient not found.");
-                }
-            }
-
-            // ================= EXIT =================
-            else if (choice == 4) {
-
-                System.out.println("Exiting program...");
+            if (choice >= 1 && choice <= 5) {
                 break;
+            } else {
+                System.out.println("Invalid option. Please enter 1-5.");
             }
 
-            else {
-                System.out.println("Invalid choice.");
-            }
+        } else {
+
+            System.out.println("Invalid input. Please enter a whole number.");
+            scanner.nextLine();
         }
     }
+
+    // ================= SEARCH =================
+    if (choice == 1) {
+
+        System.out.print("Enter ID: ");
+
+        int id = scanner.nextInt();
+
+        PatientRecord p =
+                searchArrayList(list, id);
+
+        if (p != null) {
+            System.out.println("\nFOUND:");
+            System.out.println(p);
+        } else {
+            System.out.println("Patient not found.");
+        }
+    }
+
+    // ================= INSERT =================
+    else if (choice == 2) {
+
+        scanner.nextLine();
+
+        System.out.print("Name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Age: ");
+        int age = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("Gender: ");
+        String gender = scanner.nextLine();
+
+        System.out.print("Condition: ");
+        String condition = scanner.nextLine();
+
+        System.out.print("Hospital: ");
+        String hospital = scanner.nextLine();
+
+        System.out.print("Admission Type: ");
+        String admission = scanner.nextLine();
+
+        System.out.print("Insurance: ");
+        String insurance = scanner.nextLine();
+
+        System.out.print("Billing: ");
+        double billing = scanner.nextDouble();
+
+        PatientRecord p =
+                new PatientRecord(
+                        list.size() + 1,
+                        name,
+                        age,
+                        gender,
+                        condition,
+                        hospital,
+                        admission,
+                        insurance,
+                        billing
+                );
+
+        insertRecord(list, p);
+
+        System.out.println("\nPatient Added Successfully!");
+        System.out.println("New Patient ID: " + p.id);
+    }
+
+    // ================= DELETE =================
+    else if (choice == 3) {
+
+        System.out.print("Enter ID to delete: ");
+
+        int id = scanner.nextInt();
+
+        boolean removed =
+                deleteRecord(list, id);
+
+        if (removed) {
+            System.out.println("Patient deleted.");
+        } else {
+            System.out.println("Patient not found.");
+        }
+    }
+
+    // ================= VIEW DOCTORS =================
+    else if (choice == 4) {
+
+        System.out.println("\n===== DOCTOR LIST =====");
+
+        for (PatientRecord p : list) {
+
+            System.out.println(
+                    "Patient ID: " + p.id +
+                    " | Name: " + p.name +
+                    " | Doctor: " + p.doctor
+            );
+        }
+    }
+
+    // ================= EXIT =================
+    else if (choice == 5) {
+
+        System.out.println("Exiting program...");
+        break;
+    }
+
+    else {
+        System.out.println("Invalid choice.");
+    }
+}
 }
